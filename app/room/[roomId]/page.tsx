@@ -26,6 +26,7 @@ const Room = () => {
     toggleAudio,
     toggleVideo,
     leaveRoom,
+    players
     // removePlayers
   } = usePlayer({
     id: id || "",
@@ -34,10 +35,10 @@ const Room = () => {
   });
   useEffect(() => {
     if (!socket || !stream || !peer || !setPlayers) return;
-    const handleUserConnected = (newUserId: string) => {
+    const handleUserConnected = async (newUserId: string, myStream: MediaStream): Promise<void> => {
       console.log("user connect in room with user id", newUserId);
-      const call = peer?.call(newUserId, stream);
-      call.on("stream", (incomingStream) => {
+      const call = await peer?.call(newUserId, myStream);
+      call?.on("stream", (incomingStream) => {
         console.log(
           `I am main User, incoming stream from new User ${newUserId}`,
           { incomingStream }
@@ -57,9 +58,9 @@ const Room = () => {
         }));
       });
     };
-    socket?.on("user_connected", handleUserConnected);
+    socket?.on("user_connected", (userId) => setTimeout(handleUserConnected,1000,userId,stream));
     return () => {
-      socket?.off("user_connected", handleUserConnected);
+      socket?.off("user_connected", (userId) => setTimeout(handleUserConnected,1000,userId,stream));
     };
   }, [socket, peer, stream, setPlayers]);
 
@@ -108,8 +109,11 @@ const Room = () => {
       console.log(`user with id ${userId} toggled audio`);
       setPlayers((prev) => {
         const copy = _.cloneDeep(prev);
-        copy[userId].muted = !copy[userId].muted;
-      console.log(`audio ${copy[userId].muted ?'stopped' :'resumed' } for`, userId)
+        if(userId in userCalls){
+
+          copy[userId].muted = !copy[userId].muted;
+          console.log(`audio ${copy[userId].muted ?'stopped' :'resumed' } for`, userId)
+        }
   
         return { ...copy };
       });
@@ -119,7 +123,7 @@ const Room = () => {
       console.log(`user with id ${userId} toggled video`);
       setPlayers((prev) => {
         const copy = _.cloneDeep(prev);
-        copy[userId].playing = !copy[userId].playing;
+        if (userId in userCalls) copy[userId].playing = !copy[userId].playing;
         return { ...copy };
       });
     };
@@ -141,7 +145,7 @@ const Room = () => {
 
     }
   }, [socket, userCalls, setPlayers]);
-  console.log({nonHighlightedPlayers, playerHighlighted})
+  console.log({userCalls})
   return (
     <div className="w-full h-full bg-black">
       {playerHighlighted && (

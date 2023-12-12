@@ -6,15 +6,22 @@ import React, { useEffect, useRef, useState } from "react";
 
 const usePeer = () => {
   const [peer, setPeer] = useState<Peer | null>(null);
-  const params = useParams<{roomId: string}>();
+  const params = useParams<{ roomId: string }>();
   const socket = useSocket();
   const [id, setId] = useState<string | null>(null);
   const isPeerSet = useRef(false);
   useEffect(() => {
     if (!params?.roomId || !socket) return;
     if (isPeerSet.current) return;
+    const isDev = process.env.NODE_ENV !== "production";
+    const url = !isDev ? "google-meet-peer.onrender.com" : "localhost";
     (async () => {
-      const myPeer = new (await import("peerjs")).default();
+      const myPeer = new Peer({
+        host: url,
+        secure: isDev ? false : true,
+        port: isDev ? 5050 : 10000,
+        path: "/",
+      });
       setPeer(myPeer);
       myPeer.on("open", (id): void => {
         setId(id);
@@ -24,7 +31,7 @@ const usePeer = () => {
       });
     })();
     isPeerSet.current = true;
-  }, [ socket, params]);
+  }, [socket, params]);
   return { peer, id };
 };
 
