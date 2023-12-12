@@ -19,7 +19,7 @@ const usePeer = () => {
       const myPeer = new Peer({
         host: url,
         secure: isDev ? false : true,
-        port: isDev ? 5050 : 10000,
+        port: isDev ? 5050 : 443,
         path: "/",
       });
       setPeer(myPeer);
