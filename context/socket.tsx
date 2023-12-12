@@ -15,8 +15,8 @@ export const SocketProvider = ({children}: {children: React.ReactNode}) => {
     const connection = io();
     setSocket(connection);
   }, []);
-  socket?.on('connect_error', async (err) => {
-    console.log('error established');
+  socket?.on('connect_error', async (err): Promise<void> => {
+    console.log('error established', err);
     await fetch('/api/socket/io');
   });
   console.log({socket})

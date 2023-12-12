@@ -1,7 +1,7 @@
 import React from "react";
 import ReactPlayer from "react-player";
 
-interface PlayerProps{
+export interface PlayerProps{
   playerId: string;
   url: string | MediaStream;
   muted: boolean;
