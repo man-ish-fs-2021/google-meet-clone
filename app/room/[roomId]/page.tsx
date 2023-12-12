@@ -5,16 +5,32 @@ import useMediaStream from "@/hooks/useMediaStream";
 import usePeer from "@/hooks/usePeer";
 import usePlayer from "@/hooks/usePlayer";
 import { useParams } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./room.module.css";
+import ControlPanel from "@/components/ControlPannel";
+import { MediaConnection } from "peerjs";
+import _ from "lodash";
 
 const Room = () => {
   const params = useParams<{ roomId: string }>();
   const { stream } = useMediaStream();
   const socket = useSocket();
   const { peer, id } = usePeer();
-  const { setPlayers, playerHighlighted, nonHighlightedPlayers } = usePlayer({
+  const [userCalls, setUserCalls] = useState<{ [id: string]: MediaConnection }>(
+    {}
+  );
+  const {
+    setPlayers,
+    playerHighlighted,
+    nonHighlightedPlayers,
+    toggleAudio,
+    toggleVideo,
+    leaveRoom,
+    // removePlayers
+  } = usePlayer({
     id: id || "",
+    roomId: params?.roomId || "",
+    peer,
   });
   useEffect(() => {
     if (!socket || !stream || !peer || !setPlayers) return;
@@ -34,6 +50,10 @@ const Room = () => {
             playing: true,
             playerId: newUserId,
           } as PlayerProps,
+        }));
+        setUserCalls((prev) => ({
+          ...prev,
+          [newUserId]: call,
         }));
       });
     };
@@ -61,12 +81,16 @@ const Room = () => {
             playerId: callerId,
           } as PlayerProps,
         }));
+        setUserCalls((prev) => ({
+          ...prev,
+          [callerId]: call,
+        }));
       });
     });
   }, [peer, setPlayers, stream]);
 
   useEffect(() => {
-    if (!stream || !id || !setPlayers) return;
+    if (!stream || !id || !setPlayers ) return;
     console.log(`setting my stream ${id}`);
     setPlayers((prev) => ({
       ...prev,
@@ -78,6 +102,40 @@ const Room = () => {
       } as PlayerProps,
     }));
   }, [id, setPlayers, stream]);
+  useEffect(() => {
+    if (!socket || !userCalls || !setPlayers) return;
+    const handleToggleAudio = (userId: string) => {
+      console.log(`user with id ${userId} toggled audio`);
+      setPlayers((prev) => {
+        const copy = _.cloneDeep(prev);
+        copy[userId].muted = !copy[userId].muted;
+      console.log(`audio ${copy[userId].muted ?'stopped' :'resumed' } for`, userId)
+  
+        return { ...copy };
+      });
+    };
+    socket?.on("user_toggle_audio", handleToggleAudio);
+    const handleToggleVideo = (userId: string) => {
+      console.log(`user with id ${userId} toggled video`);
+      setPlayers((prev) => {
+        const copy = _.cloneDeep(prev);
+        copy[userId].playing = !copy[userId].playing;
+        return { ...copy };
+      });
+    };
+    socket?.on("user_toggle_video", handleToggleVideo);
+    const handleUserLeave = (userId: string) => {
+      console.log("user with user id is leacing the room", userId);
+      setPlayers((prev) => {
+        const copy = _.cloneDeep(prev);
+        delete copy[userId]
+        return { ...copy };
+      });
+      userCalls[userId]?.close();
+    };
+    socket?.on("user_leave", handleUserLeave);
+  }, [socket, userCalls, setPlayers]);
+  console.log({nonHighlightedPlayers, playerHighlighted})
   return (
     <div>
       {playerHighlighted && (
@@ -105,6 +163,14 @@ const Room = () => {
           );
         })}
       </div>
+      {playerHighlighted && ( <ControlPanel
+        muted={playerHighlighted.muted}
+        playing={playerHighlighted.playing}
+        toggleAudio={toggleAudio}
+        toggleVideo={toggleVideo}
+        leaveRoom={leaveRoom}
+      />)}
+     
     </div>
   );
 };

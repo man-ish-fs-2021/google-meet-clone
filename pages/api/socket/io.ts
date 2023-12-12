@@ -13,6 +13,18 @@ const SocketHandler = (req: any, res: any) => {
         socket.join(roomId);
         socket.broadcast.to(roomId).emit("user_connected", id);
       });
+      socket.on("user_toggle_audio", (roomId, userId) => {
+        socket.join(roomId);
+        socket.broadcast.to(roomId).emit("user_toggle_audio", userId);
+      });
+      socket.on("user_toggle_video", (roomId, userId) => {
+        socket.join(roomId);
+        socket.broadcast.to(roomId).emit("user_toggle_video", userId);
+      });
+      socket.on("user_leave", (roomId, userId) => {
+        socket.join(roomId);
+        socket.broadcast.to(roomId).emit("user_leave", userId);
+      });
     });
   }
   res.end();

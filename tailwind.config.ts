@@ -19,6 +19,7 @@ const config: Config = {
         button: "#1b73e8",
         tertiary: "#0bac46",
         buttonPrimary: "#d90429",
+        secondary: "#343a40",
       },
     },
   },
