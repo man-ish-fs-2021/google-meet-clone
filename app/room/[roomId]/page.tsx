@@ -1,19 +1,22 @@
-'use client'
-import { useSocket } from '@/context'
-import usePeer from '@/hooks/usePeer'
-import React, { useEffect } from 'react'
+"use client";
+import Player from "@/components/Player";
+import { useSocket } from "@/context";
+import useMediaStream from "@/hooks/useMediaStream";
+import usePeer from "@/hooks/usePeer";
+import { useParams } from "next/navigation";
+import React, { useEffect } from "react";
 
 const Room = () => {
-    const socket = useSocket()
-    const {peer} = usePeer()
-    useEffect(() => {
-      socket?.on('connect', () => {
-        console.log(socket.id)
-      })
-    }, [socket])
-  return (
-    <div>Room</div>
-  )
-}
+  const params = useParams<{ roomId: string }>();
+  const { stream } = useMediaStream();
+  const socket = useSocket();
+  const { peer ,id } = usePeer();
+  useEffect(() => {
+    socket?.on("connect", () => {
+      console.log(socket.id);
+    });
+  }, [socket]);
+  return <div><Player url={stream || ""} muted={true} playerId={id || ""} playing={true} /></div>;
+};
 
-export default Room
+export default Room;
