@@ -13,7 +13,7 @@ export interface PlayerProps {
 }
 
 const Player = ({ playerId, url, muted, playing, isActive }: PlayerProps) => {
-  const icon = () => (muted ? <MicOff /> : <Mic />);
+  const icon = () => (muted ? <MicOff className={styles.icon} /> : <Mic className={styles.icon} />);
   return (
     <div
       className={cx(styles.playerContainer, {

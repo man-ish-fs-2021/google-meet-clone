@@ -134,10 +134,16 @@ const Room = () => {
       userCalls[userId]?.close();
     };
     socket?.on("user_leave", handleUserLeave);
+    return () => {
+    socket?.off("user_leave", handleUserLeave);
+    socket?.off("user_toggle_video", handleToggleVideo);
+    socket?.off("user_toggle_audio", handleToggleAudio);
+
+    }
   }, [socket, userCalls, setPlayers]);
   console.log({nonHighlightedPlayers, playerHighlighted})
   return (
-    <div>
+    <div className="w-full h-full bg-black">
       {playerHighlighted && (
         <div className={styles.activePlayerContainer}>
           <Player

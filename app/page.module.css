@@ -1,19 +1,22 @@
 .homeContainer {
-    @apply w-4/12 mx-auto p-2 border border-white rounded mt-8 text-white flex flex-col items-center;
+    @apply  mx-auto p-10  rounded mt-8  flex flex-col items-center justify-center;
   
     h1 {
-      @apply text-xl text-center;
+      @apply  text-center font-bold text-5xl py-10;
+    }
+    h2 {
+      @apply  text-center font-thin text-2xl py-10;
     }
   
-    button {
-      @apply bg-buttonPrimary py-2 px-4 rounded;
+    .primaryButton {
+      @apply bg-button py-2 px-4 rounded text-white w-fit;
     }
   
     .enterRoom {
-      @apply flex flex-col items-center mt-3 w-full;
+      @apply flex items-center mt-3 w-full gap-5;
   
       input {
-        @apply text-black text-lg p-1 rounded w-9/12 mb-3;
+        @apply text-black text-lg p-1 rounded w-9/12 mb-3 border;
       }
     }
   
